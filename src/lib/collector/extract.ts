@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { collectedItems } from "@/db/schema";
 import { and, eq, inArray, isNull, lte, or } from "drizzle-orm";
 import { MAX_RETRIES, wordCount } from "@/lib/pipeline/config";
+import { normalizeItemLimit } from "@/lib/pipeline/limits";
 import { markItemFailed } from "@/lib/pipeline/item-status";
 
 const EXTRACTION_TIMEOUT_MS = 10_000;
@@ -158,9 +159,10 @@ async function processItem(item: { id: number; sourceLink: string }): Promise<Ex
   return result;
 }
 
-export async function extractPendingItems(): Promise<ExtractResult[]> {
+export async function extractPendingItems(maxItems?: number): Promise<ExtractResult[]> {
   // Both fresh ("pending") and retriable ("failed") items are eligible; items
   // that already have full text are skipped.
+  const limit = normalizeItemLimit(maxItems, BATCH_LIMIT);
   const pendingItems = await db
     .select({
       id: collectedItems.id,
@@ -174,7 +176,7 @@ export async function extractPendingItems(): Promise<ExtractResult[]> {
         or(isNull(collectedItems.fullText), eq(collectedItems.fullText, "")),
       ),
     )
-    .limit(BATCH_LIMIT);
+    .limit(limit);
 
   const results: ExtractResult[] = new Array(pendingItems.length);
   let cursor = 0;

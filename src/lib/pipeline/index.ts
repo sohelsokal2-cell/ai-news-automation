@@ -12,18 +12,28 @@ export type PipelineResult = {
   ruleEngine: RuleEngineResult;
 };
 
-export async function runFullPipeline(): Promise<PipelineResult> {
+export type PipelineOptions = {
+  /**
+   * Cap on items processed this run (Option B: Vercel Hobby 60s budget).
+   * Applied to extraction + AI writer. Collection still polls all due feeds
+   * (cheap), leftovers stay queued for the next 15-min run.
+   */
+  maxItems?: number;
+};
+
+export async function runFullPipeline(options: PipelineOptions = {}): Promise<PipelineResult> {
+  const maxItems = options.maxItems;
   // Phase 1: Collect RSS feeds (parallel per feed, pollInterval respected)
   const collect = await collectAllFeeds();
 
   // Phase 2: Extract full text (parallel per item, bounded concurrency)
-  const extract = await extractPendingItems();
+  const extract = await extractPendingItems(maxItems);
 
   // Phase 3: Deduplicate pending items
   const deduplicateResult = await deduplicate();
 
   // Phase 4: AI writer (batched, with fallback)
-  const write = await writePending();
+  const write = await writePending(maxItems);
 
   // Phase 5: Rule engine validation + insert into articles
   const allWritten = write.flatMap((w) => w.written);

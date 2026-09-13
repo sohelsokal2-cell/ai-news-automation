@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { collectedItems } from "@/db/schema";
 import { and, eq, inArray, lte } from "drizzle-orm";
 import { BATCH_MIN, BATCH_MAX, MAX_RETRIES, VALID_CATEGORIES, wordCount } from "@/lib/pipeline/config";
+import { normalizeItemLimit } from "@/lib/pipeline/limits";
 import { wrapUntrusted, containsPromptInjection } from "@/lib/sanitize";
 import { markItemFailed, markItemPermanentlyFailed } from "@/lib/pipeline/item-status";
 
@@ -327,7 +328,8 @@ export async function writeBatch(items: CollectedRow[]): Promise<WriteResult> {
   return result;
 }
 
-export async function writePending(): Promise<WriteResult[]> {
+export async function writePending(maxItems?: number): Promise<WriteResult[]> {
+  const limit = normalizeItemLimit(maxItems, BATCH_LIMIT);
   const pending = await db
     .select({
       id: collectedItems.id,
@@ -348,7 +350,7 @@ export async function writePending(): Promise<WriteResult[]> {
         lte(collectedItems.retryCount, MAX_RETRIES),
       ),
     )
-    .limit(BATCH_LIMIT);
+    .limit(limit);
 
   if (pending.length === 0) return [];
 

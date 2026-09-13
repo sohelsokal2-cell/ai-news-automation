@@ -1,6 +1,10 @@
 import { db } from "@/db";
 import { pipelineRuns } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
+import {
+  DEFAULT_MAX_ITEMS_PER_RUN,
+  MAX_ITEMS_PER_RUN_HARD_CAP,
+} from "./config";
 import { runFullPipeline } from "./index";
 
 export type PipelineRunSummary = {
@@ -12,6 +16,7 @@ export type PipelineRunSummary = {
   published: number;
   held: number;
   failed: number;
+  maxItems?: number;
   runId?: number;
   errors?: string[];
 };
@@ -45,10 +50,22 @@ function isDuplicateKeyError(err: unknown): boolean {
  * Stale runs (older than the max expected duration) are reaped first so a
  * crashed process can't block future runs forever.
  */
-export async function runPipelineAndReport(): Promise<PipelineRunSummary> {
+export async function runPipelineAndReport(
+  requestedMaxItems?: number,
+): Promise<PipelineRunSummary> {
   const start = Date.now();
   const errors: string[] = [];
   const STALE_RUN_MS = 10 * 60 * 1000; // 10 min
+
+  // Option B: default 3 items/run; caller may override via ?limit= (clamped to
+  // the hard cap so a single Vercel Hobby invocation stays inside 60s).
+  let maxItems = DEFAULT_MAX_ITEMS_PER_RUN;
+  if (requestedMaxItems !== undefined && Number.isFinite(requestedMaxItems)) {
+    maxItems = Math.min(
+      Math.max(Math.floor(requestedMaxItems), 1),
+      MAX_ITEMS_PER_RUN_HARD_CAP,
+    );
+  }
 
   // Reap stale runs from crashed processes.
   await db.execute(
@@ -83,7 +100,7 @@ export async function runPipelineAndReport(): Promise<PipelineRunSummary> {
   const runId = claimed!.id;
 
   try {
-    const result = await runFullPipeline();
+    const result = await runFullPipeline({ maxItems });
 
     const collected = result.collect.reduce((sum, r) => sum + r.inserted, 0);
     const collectErrors = result.collect
@@ -136,6 +153,7 @@ export async function runPipelineAndReport(): Promise<PipelineRunSummary> {
       published,
       held,
       failed: held,
+      maxItems,
       runId,
       errors: errors.length > 0 ? errors : undefined,
     };
