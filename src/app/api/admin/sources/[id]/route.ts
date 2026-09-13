@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { sources } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },

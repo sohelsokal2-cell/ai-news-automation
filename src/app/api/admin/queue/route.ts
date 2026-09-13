@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { collectedItems } from "@/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");

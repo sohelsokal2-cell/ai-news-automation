@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { sources } from "@/db/schema";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(): Promise<NextResponse> {
   const all = await db.select().from(sources);
   return NextResponse.json(all);

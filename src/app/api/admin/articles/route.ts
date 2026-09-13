@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { articles, categories } from "@/db/schema";
 import { and, eq, ilike, desc, sql } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
