@@ -1,8 +1,22 @@
 import { db } from "@/db";
 import { collectedItems } from "@/db/schema";
 import { and, eq, inArray, lte } from "drizzle-orm";
-import { BATCH_MIN, BATCH_MAX, MAX_RETRIES, VALID_CATEGORIES, wordCount } from "@/lib/pipeline/config";
+import {
+  BATCH_MIN,
+  BATCH_MAX,
+  MAX_RETRIES,
+  MAX_ITEMS_PER_RUN_HARD_CAP,
+  VALID_CATEGORIES,
+  wordCount,
+} from "@/lib/pipeline/config";
 import { normalizeItemLimit } from "@/lib/pipeline/limits";
+
+// Vercel Hobby hard limit is 60s per invocation. The AI call is the slowest
+// phase, so cap each fetch (Gemini/Groq) to 15s — if a provider stalls, we
+// treat it as failed and surface the error instead of hanging to 60s and
+// getting killed mid-run. 15s leaves ~40s of headroom for collection,
+// extraction, deduplication, DB writes, and the rule engine on cold starts.
+const AI_CALL_TIMEOUT_MS = 15_000;
 import { wrapUntrusted, containsPromptInjection } from "@/lib/sanitize";
 import { markItemFailed, markItemPermanentlyFailed } from "@/lib/pipeline/item-status";
 
@@ -120,7 +134,10 @@ function parseAiResponse(raw: string): AiResponse {
 // Per-run cap on AI-written items, sized so writePending() completes inside
 // maxDuration=60s. Collection can add ~150 items per run while the writer
 // consumes BATCH_LIMIT; the remainder stays queued for subsequent runs.
-const BATCH_LIMIT = 20;
+// Sync with MAX_ITEMS_PER_RUN_HARD_CAP from config. Must NOT exceed 10,
+// otherwise writePending() can select more items than limit=3 allows and
+// blow the 60s Vercel Hobby budget on a single slow AI call.
+const BATCH_LIMIT = MAX_ITEMS_PER_RUN_HARD_CAP;
 
 function validateItem(item: AiItem, sourceLink: string): boolean {
   if (item.source_link !== sourceLink) return false;
@@ -134,88 +151,115 @@ async function callGemini(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is required");
 
-  const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 8192,
-          responseMimeType: "application/json",
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AI_CALL_TIMEOUT_MS);
+  try {
+    const res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
         },
-      }),
-    },
-  );
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 8192,
+            responseMimeType: "application/json",
+          },
+        }),
+        signal: controller.signal,
+      },
+    );
 
-  if (res.status === 429) throw new Error("RATE_LIMITED");
-  if (!res.ok) {
-    let detail = "";
-    try {
-      const body = await res.text();
-      detail = body.length > 300 ? body.slice(0, 300) : body;
-    } catch {}
-    throw new Error(`Gemini API error: ${res.status} ${detail}`);
+        if (res.status === 429) throw new Error("RATE_LIMITED");
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const body = await res.text();
+        detail = body.length > 300 ? body.slice(0, 300) : body;
+      } catch {}
+      throw new Error(`Gemini API error: ${res.status} ${detail}`);
+    }
+
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error("Gemini returned empty response");
+    return text;
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error(`Gemini request timed out after ${AI_CALL_TIMEOUT_MS}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
-
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Gemini returned empty response");
-  return text;
 }
 
 async function callGroq(prompt: string): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY is required");
 
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "openai/gpt-oss-120b",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.3,
-      max_tokens: 8192,
-      response_format: { type: "json_object" },
-    }),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AI_CALL_TIMEOUT_MS);
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-oss-120b",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.3,
+        max_tokens: 8192,
+        response_format: { type: "json_object" },
+      }),
+      signal: controller.signal,
+    });
 
-  if (res.status === 429) throw new Error("RATE_LIMITED");
-  if (!res.ok) {
-    let detail = "";
-    try {
-      const body = await res.text();
-      detail = body.length > 300 ? body.slice(0, 300) : body;
-    } catch {}
-    throw new Error(`Groq API error: ${res.status} ${detail}`);
+    if (res.status === 429) throw new Error("RATE_LIMITED");
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const body = await res.text();
+        detail = body.length > 300 ? body.slice(0, 300) : body;
+      } catch {}
+      throw new Error(`Groq API error: ${res.status} ${detail}`);
+    }
+
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) throw new Error("Groq returned empty response");
+    return text;
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error(`Groq request timed out after ${AI_CALL_TIMEOUT_MS}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
-
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content;
-  if (!text) throw new Error("Groq returned empty response");
-  return text;
 }
 
 async function callAi(prompt: string): Promise<string> {
   const primary = getProvider();
   const fallback: AiProvider = primary === "gemini" ? "groq" : "gemini";
 
-  try {
+    try {
     return primary === "groq" ? await callGroq(prompt) : await callGemini(prompt);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // Don't fall back to the other provider on timeout — that would consume
+    // *another* 15s and likely still hit the 60s Vercel ceiling. Surface it.
+    if (msg.includes("timed out")) throw err;
     if (msg.includes("RATE_LIMITED") || msg.includes("API_KEY") || msg.includes("required")) {
       throw err;
     }

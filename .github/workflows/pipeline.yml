@@ -8,8 +8,20 @@ on:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    steps:
+        steps:
       - name: Trigger ingestion
         run: |
-          curl -f -X POST "${{ secrets.SITE_URL }}/api/cron/ingest?limit=3" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+          set +e
+          for attempt in 1 2 3; do
+            http_code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.SITE_URL }}/api/cron/ingest?limit=3" \
+              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+              --max-time 55)
+            if [ "$http_code" = "200" ]; then
+              echo "Ingest succeeded (HTTP $http_code) on attempt $attempt"
+              exit 0
+            fi
+            echo "Attempt $attempt failed with HTTP $http_code, retrying..."
+            sleep $((attempt * 5))
+          done
+          echo "All attempts failed; last HTTP was $http_code"
+          exit 1
