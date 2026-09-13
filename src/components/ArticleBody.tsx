@@ -27,7 +27,6 @@ export function ArticleBody({ article }: { article: PublicArticle }) {
         <LanguageToggle />
         <p className="mt-3 text-sm text-[#7a6850]">
           {formatBnDate(article.pubDate)}
-          {article.sourceName ? ` · ${article.sourceName}` : ""}
         </p>
       </div>
       <figure className="mt-6">
@@ -45,14 +44,6 @@ export function ArticleBody({ article }: { article: PublicArticle }) {
           para.trim() ? <p key={i}>{para}</p> : null,
         )}
       </div>
-      {article.sourceUrl ? (
-        <p className="mt-8 text-sm">
-          {lang === "bn" ? "উৎস:" : "Source:"}{" "}
-          <a className="text-[#8d1a1a] underline" href={article.sourceUrl} rel="noopener noreferrer">
-            {article.sourceName || (lang === "bn" ? "মূল প্রতিবেদন" : "Original report")}
-          </a>
-        </p>
-      ) : null}
     </>
   );
 }

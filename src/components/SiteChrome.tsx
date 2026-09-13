@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import { formatBnDate } from "@/lib/queries";
 import type { Category } from "@/db/schema";
+import { SiteLogo } from "@/components/SiteLogo";
 
 const NAV = [
   { href: "/", label: "প্রচ্ছদ" },
@@ -41,13 +41,7 @@ export function SiteHeader({ categories }: { categories?: Category[] }) {
       <div className="crimson-rule" />
       <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-6 text-center sm:px-6">
         <div className="flex items-center gap-3">
-          <Image
-            src="/images/logo.svg"
-            alt="সংবাদচক্র"
-            width={56}
-            height={56}
-            className="h-14 w-14 rounded-full border border-[#c9a44a] object-cover"
-          />
+          <SiteLogo size={56} />
           <div>
             <p className="text-[11px] tracking-[0.35em] text-[#8d1a1a]">BANGLA NEWS CYCLE</p>
             <h1 className="font-serif text-5xl font-black tracking-tight text-[#8d1a1a] sm:text-6xl">সংবাদচক্র</h1>
@@ -78,13 +72,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-3 sm:px-6">
         <div>
           <div className="flex items-center gap-2">
-            <Image
-              src="/images/logo.svg"
-              alt="সংবাদচক্র"
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-full object-cover"
-            />
+            <SiteLogo size={40} className="h-10 w-10 rounded-full object-cover" />
             <strong className="text-2xl">সংবাদচক্র</strong>
           </div>
           <p className="mt-3 text-sm leading-7 text-[#d9c7a4]">

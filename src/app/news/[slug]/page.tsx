@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/ArticleCard";
 import { LangScope } from "@/components/LangContext";
 import { ArticleBody } from "@/components/ArticleBody";
+import { AdSlot } from "@/components/AdSlot";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { loadBySlug, loadNav, loadRelated } from "@/lib/queries";
 
@@ -36,7 +37,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       <LangScope>
       <SiteHeader categories={cats} />
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <AdSlot slot="header" className="mb-6" />
         <ArticleBody article={article} />
+        <AdSlot slot="in-article" className="mt-8" />
         {related.length ? (
           <section className="mt-12 border-t border-[#c9b48a] pt-8">
             <h2 className="text-2xl font-bold">সম্পর্কিত</h2>

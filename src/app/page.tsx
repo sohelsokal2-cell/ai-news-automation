@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArticleCard } from "@/components/ArticleCard";
+import { AdSlot } from "@/components/AdSlot";
 import { LangScope } from "@/components/LangContext";
 import { BreakingTicker, SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { loadNav, loadPublished } from "@/lib/queries";
@@ -47,6 +48,7 @@ export default async function HomePage() {
             </div>
           </div>
           <aside className="space-y-6">
+            <AdSlot slot="sidebar" />
             <div className="border border-[#c9b48a] bg-[#fff8ea] p-5">
               <h2 className="border-b-2 border-[#8d1a1a] pb-2 font-serif text-2xl font-black text-[#8d1a1a]">
                 পঠিত

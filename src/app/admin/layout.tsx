@@ -20,6 +20,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Link href="/admin/queue" className="hover:text-[#8d1a1a]">
               Queue
             </Link>
+            <Link href="/admin/ads" className="hover:text-[#8d1a1a]">
+              Ads
+            </Link>
             <Link href="/" className="text-gray-400 hover:text-[#8d1a1a]">
               View Site
             </Link>

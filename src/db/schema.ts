@@ -106,9 +106,31 @@ export const pipelineRuns = pgTable("pipeline_runs", {
   errors: text("errors"),
 });
 
+export const ads = pgTable(
+  "ads",
+  {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    // Slot placement on the public site: header | sidebar | in-article | footer
+    slot: text("slot").notNull().default("sidebar"),
+    imageUrl: text("image_url"),
+    linkUrl: text("link_url"),
+    // Raw HTML/script (e.g. AdSense). Rendered as-is; trusted admin input only.
+    html: text("html"),
+    isActive: boolean("is_active").default(true).notNull(),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    priority: integer("priority").default(0).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index("ads_slot_idx").on(table.slot)],
+);
+
 export type Category = typeof categories.$inferSelect;
 export type PipelineRun = typeof pipelineRuns.$inferSelect;
 export type Source = typeof sources.$inferSelect;
 export type CollectedItem = typeof collectedItems.$inferSelect;
 export type Article = typeof articles.$inferSelect;
 export type NewArticle = typeof articles.$inferInsert;
+export type Ad = typeof ads.$inferSelect;

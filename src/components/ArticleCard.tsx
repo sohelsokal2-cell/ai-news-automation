@@ -46,7 +46,7 @@ export function ArticleCard({
         </h2>
         <p className="mt-2 text-sm leading-7 text-[#4a3b2a]">{t.summary}</p>
         <p className="mt-2 text-xs text-[#7a6850]">
-          {formatBnDate(article.pubDate)} {article.sourceName ? `· ${article.sourceName}` : ""}
+          {formatBnDate(article.pubDate)}
         </p>
       </div>
     </article>
