@@ -1,0 +1,41 @@
+
+> dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.101:3000
+- Environments: .env
+✓ Ready in 328ms
+
+ GET / 200 in 1076ms (next.js: 122ms, application-code: 953ms)
+ GET / 200 in 249ms (next.js: 4ms, application-code: 246ms)
+ GET /about 200 in 130ms (next.js: 27ms, application-code: 103ms)
+ GET /contact 200 in 136ms (next.js: 25ms, application-code: 111ms)
+[proxy] hit /admin/login
+ GET /admin/login 200 in 105ms (next.js: 13ms, proxy.ts: 39ms, application-code: 53ms)
+ GET /robots.txt 200 in 49ms (next.js: 39ms, application-code: 10ms)
+ GET /sitemap.xml 200 in 214ms (next.js: 37ms, application-code: 177ms)
+ GET /category/international 200 in 660ms (next.js: 362ms, application-code: 298ms)
+[proxy] hit /admin
+[proxy] hit /api/admin/sources
+[proxy] hit /api/admin/login
+ POST /api/admin/login 401 in 36ms (next.js: 25ms, proxy.ts: 4ms, application-code: 7ms)
+[proxy] hit /api/admin/login
+ POST /api/admin/login 400 in 8ms (next.js: 1893µs, proxy.ts: 3ms, application-code: 3ms)
+ POST /api/cron/ingest 200 in 9.1s (next.js: 53ms, application-code: 9.0s)
+ GET /sitemap.xml 200 in 870ms (next.js: 1911µs, application-code: 868ms)
+ GET /news/%E0%A6%AA-%E0%A6%B6-%E0%A6%95-%E0%A6%93-%E0%A6%AC-%E0%A6%AF%E0%A6%95-%E0%A6%A4-%E0%A6%A4-%E0%A6%AC-%E0%A6%86%E0%A6%B6-%E0%A6%B0-%E0%A6%A6%E0%A6%B6%E0%A6%95-%E0%A6%B0-%E0%A6%95%E0%A6%AC-%E0%A6%A6-%E0%A6%B0-%E0%A6%AB-%E0%A6%AF-%E0%A6%B6%E0%A6%A8-%E0%A6%B8%E0%A6%9A-%E0%A6%A4%E0%A6%A8%E0%A6%A4-1121 200 in 971ms (next.js: 547ms, application-code: 424ms)
+ GET /news/%E0%A6%86%E0%A6%B6-%E0%A6%B0-%E0%A6%A6%E0%A6%B6%E0%A6%95-%E0%A6%B0-%E0%A6%95%E0%A6%AC-%E0%A6%A6-%E0%A6%B0-%E0%A6%AB-%E0%A6%AF-%E0%A6%B6%E0%A6%A8%E0%A6%B8%E0%A6%9A-%E0%A6%A4%E0%A6%A8%E0%A6%A4-%E0%A6%93-%E0%A6%85%E0%A6%A8%E0%A6%A8-%E0%A6%AF-%E0%A6%9C-%E0%A6%AC%E0%A6%A8-%E0%A6%A7-%E0%A6%B0-1121 200 in 225ms (next.js: 8ms, application-code: 218ms)
+ GET /news/%E0%A6%AE-%E0%A6%B8-%E0%A6%B0-%E0%A6%A6-%E0%A6%B0-%E0%A6%A3-%E0%A6%97-%E0%A6%B2-%E0%A6%B0-%E0%A6%AA%E0%A6%B0%E0%A6%93-%E0%A6%A8-%E0%A6%AF-%E0%A6%B6%E0%A6%AD-%E0%A6%B2-%E0%A6%B0-%E0%A6%B8%E0%A6%99-%E0%A6%97-%E0%A6%87%E0%A6%A8-%E0%A6%9F-%E0%A6%B0-%E0%A6%AE-%E0%A6%AF-%E0%A6%AE-%E0%A6%B0-%E0%A6%A1-%E0%A6%B0-1127 200 in 233ms (next.js: 2ms, application-code: 231ms)
+ GET / 200 in 230ms (next.js: 1907µs, application-code: 228ms)
+ GET /about 200 in 89ms (next.js: 1812µs, application-code: 88ms)
+ GET /contact 200 in 87ms (next.js: 1776µs, application-code: 85ms)
+[proxy] hit /admin/login
+ GET /admin/login 200 in 38ms (next.js: 1951µs, proxy.ts: 3ms, application-code: 33ms)
+ GET /category/international 200 in 233ms (next.js: 7ms, application-code: 227ms)
+ GET / 200 in 133ms (next.js: 2ms, application-code: 130ms)
+ GET / 200 in 533ms (next.js: 2ms, application-code: 531ms)
+✓ Compiled in 35ms
+ GET / 200 in 631ms (next.js: 25ms, application-code: 606ms)
+^C^C

@@ -1,0 +1,135 @@
+
+> dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.101:3000
+- Environments: .env
+✓ Ready in 330ms
+
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/category/..." notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head headCacheNode={{rsc:{...}, ...}}>
+                    <__next_viewport_boundary__>
+                    <MetadataWrapper>
+                      <div
+                        hidden={true}
+-                       bis_skin_checked="1"
+                      >
+                    ...
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="bn">
+                          <body
+                            className="noto_sans_bengali_5c01f576-module__frFdZG__className source_serif_4_3b31d632-mo..."
+-                           __processed_ddbcd7f0-c40f-42cc-a599-9dbde1bbbd99__="true"
+-                           bis_register="W3sibWFzdGVyIjp0cnVlLCJleHRlbnNpb25JZCI6ImVwcGlvY2VtaG1ubGJoanBsY2drb2ZjaWll..."
+                          >
+                            ...
+                              <CategoryPage>
+                                <LangScope>
+                                  <SiteHeader>
+                                    <header className="masthead-s...">
+                                      <div
+                                        className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-..."
+-                                       bis_skin_checked="1"
+                                      >
+                                        <p>
+                                        <div
+                                          className="flex items-center gap-3"
+-                                         bis_skin_checked="1"
+                                        >
+                                      <div
+                                        className="crimson-rule"
+-                                       bis_skin_checked="1"
+                                      >
+                                      <div
+                                        className="mx-auto flex max-w-6xl flex-col items-center px-4 py-6 text-center ..."
+-                                       bis_skin_checked="1"
+                                      >
+                                        <div
+                                          className="flex items-center gap-3"
+-                                         bis_skin_checked="1"
+                                        >
+                                          <img>
+                                          <div
+-                                           bis_skin_checked="1"
+                                          >
+                                        ...
+                                      ...
+                                  <main className="mx-auto ma...">
+                                    <p>
+                                    <h1>
+                                    <div
+                                      className="mt-8 grid gap-6 md:grid-cols-3"
+-                                     bis_skin_checked="1"
+                                    >
+                                    ...
+                                  <SiteFooter>
+                                    <footer className="mt-16 bord...">
+                                      <div
+                                        className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-3 sm:px-6"
+-                                       bis_skin_checked="1"
+                                      >
+                                        <div
+-                                         bis_skin_checked="1"
+                                        >
+                                          <div
+                                            className="flex items-center gap-2"
+-                                           bis_skin_checked="1"
+                                          >
+                                          ...
+                                        <div
+-                                         bis_skin_checked="1"
+                                        >
+                                        <div
+-                                         bis_skin_checked="1"
+                                        >
+                                      ...
+                  ...
+ 
+ GET /category/international 200 in 1597ms (next.js: 500ms, application-code: 1097ms)
+ GET /robots.txt 200 in 64ms (next.js: 48ms, application-code: 16ms)
+ GET /robots.txt 200 in 8ms (next.js: 2ms, application-code: 6ms)
+ HEAD /sitemap_index.xml 404 in 79ms (next.js: 21ms, application-code: 58ms)
+ HEAD /sitemap.xml 200 in 133ms (next.js: 40ms, application-code: 92ms)
+ GET / 200 in 554ms (next.js: 29ms, application-code: 526ms)
+ POST /api/cron/ingest 200 in 6.8s (next.js: 63ms, application-code: 6.8s)
+ GET / 200 in 468ms (next.js: 3ms, application-code: 465ms)
+ GET / 200 in 546ms (next.js: 3ms, application-code: 543ms)
+ GET /about 200 in 200ms (next.js: 42ms, application-code: 158ms)
+ GET /contact 200 in 184ms (next.js: 31ms, application-code: 153ms)
+ GET /admin/login 200 in 441ms (next.js: 387ms, application-code: 54ms)
+ GET /robots.txt 200 in 11ms (next.js: 2ms, application-code: 9ms)
+ GET /sitemap.xml 200 in 107ms (next.js: 1954µs, application-code: 105ms)
+ POST /api/cron/ingest 401 in 6ms (next.js: 1723µs, application-code: 5ms)
+ POST /api/cron/ingest 401 in 7ms (next.js: 1780µs, application-code: 5ms)
+ GET / 200 in 471ms (next.js: 2ms, application-code: 469ms)
+ POST /api/cron/ingest 401 in 8ms (next.js: 2ms, application-code: 6ms)
+ GET / 200 in 458ms (next.js: 3ms, application-code: 456ms)
+[?25h
