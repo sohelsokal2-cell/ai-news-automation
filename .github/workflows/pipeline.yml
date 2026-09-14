@@ -8,7 +8,7 @@ on:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-        steps:
+    steps:
       - name: Trigger ingestion
         run: |
           set +e
